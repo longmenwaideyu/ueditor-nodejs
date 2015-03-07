@@ -4,12 +4,12 @@ ueditor-nodejs
 ###使用方法
 ####1. 安装
     npm install ueditor-nodejs --save
-####2. 到ueditor官网下载php版或者jsp版的ueditor，并将本npm包目录/test/下的nodejs文件拷入ueditor下。将ueditor放入public下，重命名文件夹为ueditor
+####2. 到ueditor官网下载php版或者jsp版的ueditor,将ueditor放入public下，重命名文件夹为ueditor
 ####3. 将ueditor.config.js中的serverURL改为 URL + "ue"
 ####4. 注册后台
     var ueditor = require('ueditor-nodejs');
     app.use('/ueditor/ue', ueditor({
-        configFile: '/ueditor/nodejs/config.json',
+        configFile: '/ueditor/php/config.json',//如果下载的是jsp的，就填写/ueditor/jsp/config.json
         mode: 'bcs', //本地存储填写local
         AccessKey: 'Adxxxxxxx',//本地存储不填写
         SecrectKey: 'oiUqt1VpH3fdxxxx',//本地存储不填写
