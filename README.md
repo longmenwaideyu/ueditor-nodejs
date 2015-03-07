@@ -16,3 +16,5 @@ ueditor-nodejs
         staticPath: path.join(__dirname, 'public'), //一般固定的写法，静态资源的目录
         dynamicPath: '/blogpicture' //动态目录，以/开头，可以根据req动态变化，可以是一个函数，function(req) { return '/xx'}
     }));
+
+
