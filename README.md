@@ -6,7 +6,7 @@ ueditor-nodejs
     npm install ueditor-nodejs --save
 2. 到ueditor官网下载php版或者jsp版的ueditor，并将本npm包目录/test/下的nodejs文件拷入ueditor下。将ueditor放入public下，重命名文件夹为ueditor
 3. 将ueditor.config.js中的serverURL改为 URL + "ue"
-4. 注册后台
+4. 注册后台  
     var ueditor = require('ueditor-nodejs');
     app.use('/ueditor/ue', ueditor({
         configFile: '/ueditor/nodejs/config.json',
