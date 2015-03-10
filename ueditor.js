@@ -9,8 +9,8 @@ var bcs = require('bcs-nodejs-sdk');
 var config = {
     configfile: '',
     mode: 'local',
-    AccessKey: '',
-    SecrectKey: '',
+    accessKey: '',
+    secrectKey: '',
     staticPath: '',
     dynamicPath: '',
     hostName: 'bcs.duapp.com'
@@ -26,7 +26,7 @@ var setConfig = function(c) {
         config[i] = c[i];
     }
     if (config.mode == 'bcs') {
-        bcs.setKeys(config.AccessKey, config.SecrectKey);
+        bcs.setKeys(config.accessKey, config.secrectKey);
     }
     if (config.hostName.indexOf('http') != 0) {
         config.hostName = 'http://' + config.hostName;

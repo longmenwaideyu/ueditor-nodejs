@@ -1,6 +1,6 @@
 {
   "name": "ueditor-nodejs",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "ueditor nodejs server support localstorage and bcs",
   "author": {
     "name": "longmenwaideyu",
@@ -16,6 +16,7 @@
     "url": "https://github.com/longmenwaideyu/ueditor-nodejs.git"
   },
   "dependencies": {
+    "bcs-nodejs-sdk": "0.0.4",
     "busboy": "^0.2.9",
     "fs-extra": "^0.16.4"
   }
