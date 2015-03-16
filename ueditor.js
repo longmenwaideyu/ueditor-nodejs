@@ -78,7 +78,7 @@ var localListPath = function (req, callback) {
         for (var i = 0; i < files.length; i++) {
             var file = files[i];
             var extname = path.extname(file);
-            console.log(file);
+//            console.log(file);
             if (filetype.indexOf(extname.toLowerCase()) >= 0) {
                 data.push({
                     'url': d_path + '/' + file
@@ -103,7 +103,7 @@ var bcsListObject = function (req, t, callback, err) {
             for (var i = 0; i < objectList.length; i++) {
                 var obj = objectList[i];
                 var extname = path.extname(obj.object);
-                console.log(extname);
+//                console.log(extname);
                 if (parseInt(obj.is_dir) == 0) {
                     if (filetype.indexOf(extname.toLowerCase()) >= 0) {
                         data.push({
@@ -153,12 +153,13 @@ var save = function (file, filename, req, callback) {
             bcsPutObject(config.staticPath, realName,
                 'public-read', saveTo, 3, id, callback);
         } else {
-            var readPath = path.join(config.staticPath, getRealDynamicPath(), realName);
+			var dPath = getRealDynamicPath(req);
+            var readPath = path.join(config.staticPath, dPath, realName);
             fse.move(saveTo, readPath, function(err) {
                 if (err) {
                     callback(err);
                 } else {
-                    callback(null, readPath);
+                    callback(null, path.join(dPath, realName));
                 }
             });
         }
