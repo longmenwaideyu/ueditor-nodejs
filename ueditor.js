@@ -4,13 +4,13 @@ var os = require('os');
 var fs = require('fs');
 var fse = require('fs-extra');
 var Busboy = require('busboy');
-var guid = 1000;
 var bcs = require('bcs-nodejs-sdk');
+var util = require('./util');
 var config = {
     configfile: '',
     mode: 'local',
-    accessKey: '',
-    secrectKey: '',
+    AccessKey: '',
+    SecrectKey: '',
     staticPath: '',
     dynamicPath: '',
     hostName: 'bcs.duapp.com'
@@ -26,7 +26,7 @@ var setConfig = function(c) {
         config[i] = c[i];
     }
     if (config.mode == 'bcs') {
-        bcs.setKeys(config.accessKey, config.secrectKey);
+        bcs.setKeys(config.AccessKey, config.SecrectKey);
     }
     if (config.hostName.indexOf('http') != 0) {
         config.hostName = 'http://' + config.hostName;
@@ -47,74 +47,48 @@ var _ueditor = function(req, res, next) {
 }
 
 var listimage = function (req, res) {
-    var callback = function (err, list) {
-        var r = {
-            'list': list,
-            'start': 1,
-            'total': list ? list.length : 0
-        };
+    var dPath = util.getRealDynamicPath(config, req);
+    var urlRoot = util.getUrlRoot(config, dPath);
+    var callback = function (err, files) {
+        var r = {};
         if (err) {
             r.state = 'ERROR';
             res.status(500);
         } else r.state = 'SUCCESS';
-        res.json(r);
-    };
-    if (config.mode == 'bcs') {
-        bcsListObject(req, 3, callback);
-    } else {
-        localListPath(req, callback);
-    }
-}
-var localListPath = function (req, callback) {
-    var data = [];
-    d_path = getRealDynamicPath(req);
-    console.log(config.staticPath, d_path);
-    fs.readdir(path.join(config.staticPath, d_path) , function(err, files) {
-        if (err) {
-            callback(err, null);
-            return;
-        }
         var filetype = '.jpg,.jpeg,.png,.gif,.ico,.bmp';
+        var data = [];
         for (var i = 0; i < files.length; i++) {
             var file = files[i];
             var extname = path.extname(file);
-//            console.log(file);
+            //console.log(file);
             if (filetype.indexOf(extname.toLowerCase()) >= 0) {
                 data.push({
-                    'url': d_path + '/' + file
+                    'url': urlRoot + '/' + file
                 });
             }
         }
-        callback(null, data);
-    });
-}
-var bcsListObject = function (req, t, callback, err) {
-    if (t == 0) {
-        callback(err, null);
-        return;
+        r.list = data;
+        r.start = 1;
+        r.total = data ? data.length : 0;
+        res.json(r);
+    };
+    if (config.mode == 'bcs') {
+        bcsListObject(config.staticPath, callback);
+    } else {
+        fs.readdir(path.join(config.staticPath, dPath), callback);
     }
-    t--;
-    //console.log(t);
-    bcs.listObject(config.staticPath, function (res) {
+}
+var bcsListObject = function (path, callback) {
+    bcs.listObject(path, function (res) {
         if (res.statusCode == 200) {
             //console.log(res.data);
-            var data = [], objectList = res.data.object_list;
-            var filetype = '.jpg,.jpeg,.png,.gif,.ico,.bmp';
-            for (var i = 0; i < objectList.length; i++) {
-                var obj = objectList[i];
-                var extname = path.extname(obj.object);
-//                console.log(extname);
-                if (parseInt(obj.is_dir) == 0) {
-                    if (filetype.indexOf(extname.toLowerCase()) >= 0) {
-                        data.push({
-                            'url': getUrlRoot() + obj.object
-                        });
-                    }
-                }
+            var data = res.data.object_list;
+            for (var i = data.length - 1; i >= 0; i--) {
+                data[i] = data[i].object;
             }
             callback(null, data);
         } else {
-            bcsListObject(req, t, callback, res)
+            callback(util.stringify(res.headers), []);
         }
     });
 }
@@ -140,61 +114,38 @@ var uploadimage = function (req, res) {
     req.pipe(busboy);
 }
 var save = function (file, filename, req, callback) {
-    var realName = getFileName(path.extname(filename));
-    //console.log(realName);
+    var realName = util.getFileName(path.extname(filename));
+    var dPath = util.getRealDynamicPath(config, req);
     var saveTo = path.join(os.tmpDir(), realName);
-    //console.log(saveTo);
     file.pipe(fs.createWriteStream(saveTo));
     file.on('end', function() {
         if (config.mode == 'bcs') {
             var id = setTimeout(function() {
-                callback({'msg': 'timeout'});
+                callback('timeout');
             }, 10000);
             bcsPutObject(config.staticPath, realName,
-                'public-read', saveTo, 3, id, callback);
+                'public-read', saveTo, id, callback);
         } else {
-			var dPath = getRealDynamicPath(req);
             var readPath = path.join(config.staticPath, dPath, realName);
             fse.move(saveTo, readPath, function(err) {
                 if (err) {
                     callback(err);
                 } else {
-                    callback(null, path.join(dPath, realName));
+                    callback(null, dPath + '/' + realName);
                 }
             });
         }
     });
 }
-var bcsPutObject = function(buckect, object, acl, src, t, id, callback, err) {
-    if (t == 0) {
-        clearTimeout(id);
-        callback(err);
-        return;
-    }
-    t--;
+var bcsPutObject = function(buckect, object, acl, src, id, callback) {
     bcs.putObject(buckect, object, acl, src, function (res){
+        clearTimeout(id);
         if (res.statusCode == 200) {
-            clearTimeout(id);
-            callback(null, getUrlRoot() + '/' + object);
+            callback(null, util.getUrlRoot(config) + '/' + object);
         } else {
-            bcsPutObject(buckect, object, acl, src, t, id, callback, res);
+            callback(util.stringify(res.headers), '');
         }
     });
 }
-var getFileName = function(extname) {
-    var d = new Date();
-    var name = [ d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(),
-                 d.getMinutes(), d.getSeconds(), d.getMilliseconds(), guid++ ]
-                .join('_') + extname;
-    return name;
-}
-var getRealDynamicPath = function (req) {
-    var d_path = config.dynamicPath;
-    if (typeof d_path == 'function')
-        d_path = d_path(req);
-    return d_path;
-}
-var getUrlRoot = function () {
-    return config.hostName + '/' + config.staticPath;
-}
+
 module.exports = ueditor;
