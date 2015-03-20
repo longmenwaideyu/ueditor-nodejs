@@ -73,7 +73,7 @@ var listimage = function (req, res) {
         res.json(r);
     };
     if (config.mode == 'bcs') {
-        bcsListObject(config.staticPath, callback);
+        bcsListObject(dPath, callback);
     } else {
         fs.readdir(path.join(config.staticPath, dPath), callback);
     }
@@ -123,7 +123,7 @@ var save = function (file, filename, req, callback) {
             var id = setTimeout(function() {
                 callback('timeout');
             }, 10000);
-            bcsPutObject(config.staticPath, realName,
+            bcsPutObject(dPath, realName,
                 'public-read', saveTo, id, callback);
         } else {
             var readPath = path.join(config.staticPath, dPath, realName);
