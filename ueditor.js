@@ -31,6 +31,7 @@ var setConfig = function(c) {
     if (config.hostName.indexOf('http') != 0) {
         config.hostName = 'http://' + config.hostName;
     }
+    util.setConfig(config);
 }
 var _ueditor = function(req, res, next) {
     switch (req.query.action) {
@@ -39,29 +40,43 @@ var _ueditor = function(req, res, next) {
             res.redirect(config.configFile);
             break;
         case 'uploadimage':
-            uploadimage(req, res);
+            uploadfile(req, res);
             break;
         case 'listimage':
-            listimage(req, res);
+            listfile(req, res, '.jpg,.jpeg,.png,.gif,.ico,.bmp');
+            break;
+        case 'uploadscrawl':
+            uploadscrawl(req, res);
+            break;
+        case 'uploadfile':
+            uploadfile(req, res);
+            break;
+        case 'listfile':
+            listfile(req, res, [".png", ".jpg", ".jpeg", ".gif", ".bmp",
+                ".flv", ".swf", ".mkv", ".avi", ".rm", ".rmvb", ".mpeg", ".mpg",
+                ".ogg", ".ogv", ".mov", ".wmv", ".mp4", ".webm", ".mp3", ".wav", ".mid",
+                ".rar", ".zip", ".tar", ".gz", ".7z", ".bz2", ".cab", ".iso",
+                ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".pdf", ".txt", ".md", ".xml"].join(','));
+            break;
     }
 }
 
-var listimage = function (req, res) {
-    var dPath = util.getRealDynamicPath(config, req);
-    var urlRoot = util.getUrlRoot(config, dPath);
+var listfile = function (req, res, fileType) {
+    var dPath = util.getRealDynamicPath(req);
+    var urlRoot = util.getUrlRoot(dPath);
     var callback = function (err, files) {
         var r = {};
         if (err) {
             r.state = 'ERROR';
             res.status(500);
         } else r.state = 'SUCCESS';
-        var filetype = '.jpg,.jpeg,.png,.gif,.ico,.bmp';
+        //var fileType = '.jpg,.jpeg,.png,.gif,.ico,.bmp';
         var data = [];
         for (var i = 0; i < files.length; i++) {
             var file = files[i];
             var extname = path.extname(file);
             //console.log(file);
-            if (filetype.indexOf(extname.toLowerCase()) >= 0) {
+            if (fileType.indexOf(extname.toLowerCase()) >= 0) {
                 data.push({
                     'url': urlRoot + '/' + file
                 });
@@ -92,7 +107,7 @@ var bcsListObject = function (path, callback) {
         }
     });
 }
-var uploadimage = function (req, res) {
+var uploadfile = function (req, res) {
     var busboy = new Busboy({ headers: req.headers });
     busboy.on('file', function(fieldname, file, filename, encoding, mimetype) {
         var isReturn = false;
@@ -100,9 +115,10 @@ var uploadimage = function (req, res) {
             //防止多次res.end()
             if (isReturn) return;
             isReturn = true;
+            console.log(req.body);
             var r = {
                 'url': url,
-                'title': req.body.pictitle,
+                //'title': req.body.pictitle,
                 'original': filename,
             }
             if (err) {
@@ -115,7 +131,7 @@ var uploadimage = function (req, res) {
 }
 var save = function (file, filename, req, callback) {
     var realName = util.getFileName(path.extname(filename));
-    var dPath = util.getRealDynamicPath(config, req);
+    var dPath = util.getRealDynamicPath(req);
     var saveTo = path.join(os.tmpDir(), realName);
     file.pipe(fs.createWriteStream(saveTo));
     file.on('end', function() {
@@ -141,11 +157,14 @@ var bcsPutObject = function(buckect, object, acl, src, id, callback) {
     bcs.putObject(buckect, object, acl, src, function (res){
         clearTimeout(id);
         if (res.statusCode == 200) {
-            callback(null, util.getUrlRoot(config) + '/' + object);
+            callback(null, util.getUrlRoot(buckect) + '/' + object);
         } else {
             callback(util.stringify(res.headers), '');
         }
     });
+}
+
+var uploadscrawl = function (req, res) {
 }
 
 module.exports = ueditor;

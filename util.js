@@ -1,5 +1,9 @@
 var util = {};
 var guid = 1000;
+var config = null;
+util.setConfig = function(c) {
+    config = c;
+}
 util.getFileName = function(extname) {
     var d = new Date();
     var name = [ d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(),
@@ -7,12 +11,12 @@ util.getFileName = function(extname) {
                 .join('_') + extname;
     return name;
 }
-util.getUrlRoot = function (config, dPath) {
+util.getUrlRoot = function (dPath) {
     if (config.mode == 'local')
         return dPath;
     else return config.hostName + '/' + config.staticPath;
 }
-util.getRealDynamicPath = function (config, req) {
+util.getRealDynamicPath = function (req) {
     var dPath = config.dynamicPath;
     if (typeof dPath == 'function')
         dPath = dPath(req);
@@ -25,5 +29,12 @@ util.stringify = function (obj) {
     }catch (e) {
     }
     return str;
+}
+util.readdir = function(path, callback) {
+    if (config.mode == 'bcs') {
+        util.bcsListObject(dPath, callback);
+    } else {
+        fs.readdir(path.join(config.staticPath, dPath), callback);
+    }
 }
 module.exports = util;
