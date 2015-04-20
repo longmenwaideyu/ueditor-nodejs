@@ -1,6 +1,6 @@
 {
   "name": "ueditor-nodejs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ueditor nodejs server support localstorage and bcs",
   "author": {
     "name": "longmenwaideyu",

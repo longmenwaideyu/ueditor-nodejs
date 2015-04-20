@@ -28,6 +28,7 @@ ueditor-nodejs
 ####5. 动态目录示例
 
 这里例子是这个博客中的一段代码，如果是我自己上传图片，就放在uploadimage下，访客的图片放在visitorimage下。dynamicPath参数填写这个函数就可以了。bcs暂不支持自动创建目录操作，所以，返回的bucket必须是存在的，buckect开头没有/。
+
 	var dynamicPath = function (req) {
 		if (req.query.action == 'uploadimage') {//如果是上传图片
 			if (req.session.isMe) {//如果是博主自己
