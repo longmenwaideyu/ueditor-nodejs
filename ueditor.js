@@ -51,6 +51,9 @@ var _ueditor = function(req, res, next) {
         case 'uploadfile':
             uploadfile(req, res);
             break;
+        case 'uploadvideo':
+            uploadfile(req, res);
+            break;
         case 'listfile':
             listfile(req, res, [".png", ".jpg", ".jpeg", ".gif", ".bmp",
                 ".flv", ".swf", ".mkv", ".avi", ".rm", ".rmvb", ".mpeg", ".mpg",
@@ -115,7 +118,7 @@ var uploadfile = function (req, res) {
             //防止多次res.end()
             if (isReturn) return;
             isReturn = true;
-            console.log(req.body);
+            //console.log(req.body);
             var r = {
                 'url': url,
                 //'title': req.body.pictitle,
@@ -165,6 +168,22 @@ var bcsPutObject = function(buckect, object, acl, src, id, callback) {
 }
 
 var uploadscrawl = function (req, res) {
+    var realName = util.getFileName('.png');
+    var saveTo = path.join(os.tmpDir(), realName);
+    console.log(saveTo);
+    util.base64Decode(req.body.upfile, saveTo);
+    var dPath = util.getRealDynamicPath(req);
+    var readPath = path.join(config.staticPath, dPath, realName);
+    fse.move(saveTo, readPath, function(err) {
+        var r = {
+            'url': dPath + '/' + realName,
+            'original': realName,
+        }
+        if (err) {
+            r.state = 'ERROR';
+        } else r.state = 'SUCCESS';
+        res.json(r);
+    });
 }
 
 module.exports = ueditor;
