@@ -37,4 +37,11 @@ util.readdir = function(path, callback) {
         fs.readdir(path.join(config.staticPath, dPath), callback);
     }
 }
+util.base64Decode = function(data,topath,callback){
+    var fs = require("fs");
+    var imageBuffer = new Buffer(data, 'base64');
+    fs.writeFile(topath, imageBuffer, function(err) {
+        callback&&callback.call(err);
+    });
+}
 module.exports = util;

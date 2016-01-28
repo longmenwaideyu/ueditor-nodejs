@@ -170,20 +170,25 @@ var bcsPutObject = function(buckect, object, acl, src, id, callback) {
 var uploadscrawl = function (req, res) {
     var realName = util.getFileName('.png');
     var saveTo = path.join(os.tmpDir(), realName);
-    console.log(saveTo);
-    util.base64Decode(req.body.upfile, saveTo);
-    var dPath = util.getRealDynamicPath(req);
-    var readPath = path.join(config.staticPath, dPath, realName);
-    fse.move(saveTo, readPath, function(err) {
+    //console.log(saveTo);
+    util.base64Decode(req.body.upfile, saveTo, function (err) {
+        var dPath = util.getRealDynamicPath(req);
+        var readPath = path.join(config.staticPath, dPath, realName);
         var r = {
             'url': dPath + '/' + realName,
             'original': realName,
         }
         if (err) {
             r.state = 'ERROR';
-        } else r.state = 'SUCCESS';
-        res.json(r);
+            res.json(r);
+            return;
+        }
+        fse.move(saveTo, readPath, function(err) {
+            if (err) {
+                r.state = 'ERROR';
+            } else r.state = 'SUCCESS';
+            res.json(r);
+        });
     });
 }
-
 module.exports = ueditor;
