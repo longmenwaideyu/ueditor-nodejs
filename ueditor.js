@@ -75,6 +75,7 @@ var listfile = function (req, res, fileType) {
         } else r.state = 'SUCCESS';
         //var fileType = '.jpg,.jpeg,.png,.gif,.ico,.bmp';
         var data = [];
+        files = files || [];
         for (var i = 0; i < files.length; i++) {
             var file = files[i];
             var extname = path.extname(file);
