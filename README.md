@@ -42,7 +42,7 @@ ueditor-nodejs
 
 ###6. 作者个人博客
 
-[longmenwaideyu.cn](http://longmenwaideyu.cn)
+[longmenwaideyu.com](http://longmenwaideyu.com)
 如有任何问题可以在这里留言，或者直接联系我
 [http://www.longmenwaideyu.com/article/ueditor_nodejs_bcs_local](http://www.longmenwaideyu.com/article/ueditor_nodejs_bcs_local)
 
